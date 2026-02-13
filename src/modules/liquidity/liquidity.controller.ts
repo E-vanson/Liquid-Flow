@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Logger,
   UseInterceptors,
+  BadRequestException,
 } from '@nestjs/common';
 import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 import {
@@ -42,9 +43,9 @@ export class LiquidityController {
     description:
       'Returns the best way to split an order across multiple markets to minimize slippage',
   })
-  @ApiParam({ name: 'token', example: 'INJ' })
-  @ApiQuery({ name: 'amount', example: 1000 })
-  @ApiQuery({ name: 'side', enum: ['buy', 'sell'] })
+  @ApiParam({ name: 'token', example: 'INJ', description: 'Token symbol' })
+  @ApiQuery({ name: 'amount', required: true, example: 1000, description: 'Order amount' })
+  @ApiQuery({ name: 'side', required: true, enum: ['buy', 'sell'], example: 'buy', description: 'Order side' })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Optimal route calculated successfully',
@@ -54,8 +55,19 @@ export class LiquidityController {
     @Param('token') token: string,
     @Query() query: BestRouteQueryDto,
   ): Promise<BestRouteResponseDto> {
-    this.logger.log(`Getting best route for ${query.amount} ${token} (${query.side})`);
-    return this.liquidityService.findBestRoute(token, query.amount, query.side);
+    // Validate required query parameters
+    if (query.amount === undefined || query.amount === null) {
+      throw new BadRequestException('Query parameter "amount" is required');
+    }
+    if (!query.side) {
+      throw new BadRequestException('Query parameter "side" is required');
+    }
+
+    const amount = query.amount as number;
+    const side = query.side as 'buy' | 'sell';
+
+    this.logger.log(`Getting best route for ${amount} ${token} (${side})`);
+    return this.liquidityService.findBestRoute(token, amount, side);
   }
 
   @Get('market/:marketId/analysis')
@@ -65,7 +77,7 @@ export class LiquidityController {
     description:
       'Returns liquidity score, orderbook depth, slippage estimates, and market health metrics',
   })
-  @ApiParam({ name: 'marketId', example: '0x...' })
+  @ApiParam({ name: 'marketId', example: '0x...', description: 'Market ID' })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Market analysis retrieved successfully',
@@ -99,8 +111,9 @@ export class LiquidityController {
   async getArbitrageOpportunities(
     @Query() query: ArbitrageQueryDto,
   ): Promise<ArbitrageResponseDto> {
-    this.logger.log(`Scanning for arbitrage opportunities (min spread: ${query.minSpread || 0.5}%)`);
-    return this.liquidityService.findArbitrageOpportunities(query.minSpread);
+    const minSpread = query.minSpread ?? 0.5;
+    this.logger.log(`Scanning for arbitrage opportunities (min spread: ${minSpread}%)`);
+    return this.liquidityService.findArbitrageOpportunities(minSpread);
   }
 
   @Get('markets/comparison')
@@ -111,6 +124,7 @@ export class LiquidityController {
   })
   @ApiQuery({
     name: 'tokens',
+    required: true,
     example: 'INJ,USDT,ETH',
     description: 'Comma-separated list of tokens',
   })
@@ -119,6 +133,9 @@ export class LiquidityController {
     description: 'Market comparison retrieved successfully',
   })
   async compareMarkets(@Query('tokens') tokens: string): Promise<CompareMarketsResponse> {
+    if (!tokens) {
+      throw new BadRequestException('Query parameter "tokens" is required');
+    }
     const tokenList = tokens.split(',').map(t => t.trim());
     this.logger.log(`Comparing markets for: ${tokenList.join(', ')}`);
     return this.liquidityService.compareMarkets(tokenList);

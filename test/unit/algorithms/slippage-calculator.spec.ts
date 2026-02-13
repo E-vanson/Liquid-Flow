@@ -8,11 +8,9 @@ describe('SlippageCalculator', () => {
   });
 
   describe('calculateSlippage', () => {
-    it('should calculate slippage for buy order', () => {
+    it('should calculate slippage for buy order from single level', () => {
       const orderbook = [
-        { price: 100, quantity: 50 },
-        { price: 101, quantity: 50 },
-        { price: 102, quantity: 100 },
+        { price: 100, quantity: 200 },
       ];
 
       const result = calculator.calculateSlippage(orderbook, 100, 'buy');
@@ -98,7 +96,7 @@ describe('SlippageCalculator', () => {
       expect(result[3].slippage).not.toBeNull();
     });
 
-    it('should return null for unsfillable orders', () => {
+    it('should return correct slippage for orders of varying sizes', () => {
       const orderbook = [
         { price: 100, quantity: 10 },
         { price: 101, quantity: 10 },
@@ -110,8 +108,17 @@ describe('SlippageCalculator', () => {
         [5, 15, 25],
       );
 
+      // 5 units: fills from first level (no slippage)
       expect(result[0].slippage).not.toBeNull();
-      expect(result[1].slippage).toBeNull();
+      expect(result[0].slippage!.slippagePercent).toBe(0);
+      expect(result[0].slippage!.totalCost).toBe(500);
+      
+      // 15 units: fills from both levels (some slippage)
+      expect(result[1].slippage).not.toBeNull();
+      expect(result[1].slippage!.slippagePercent).toBeCloseTo(0.33, 2);
+      expect(result[1].slippage!.totalCost).toBe(1505);
+      
+      // 25 units: exceeds 20 total liquidity, should return null
       expect(result[2].slippage).toBeNull();
     });
   });
