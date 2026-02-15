@@ -336,7 +336,7 @@ MIT License - see LICENSE file
 
 **Event:** Ninja API Forge  
 **Category:** Developer APIs on Injective  
-**Built by:** [Your Name]  
+**Built by:** Evanson Kamau
 **Date:** February 2026
 
 ### Why This API Matters
@@ -351,9 +351,9 @@ This API provides all of that in simple, well-documented endpoints.
 
 ## 📞 Contact
 
-- Twitter: [@yourusername](https://twitter.com/yourusername)
-- GitHub: [@yourusername](https://github.com/yourusername)
-- Email: your.email@example.com
+- Twitter: [@yourusername](https://twitter.com/kimiu6006)
+- GitHub: [@yourusername](https://github.com/E-vanson)
+- Email: evansonkamau233@gmail.com
 
 ## 🙏 Acknowledgments
 
