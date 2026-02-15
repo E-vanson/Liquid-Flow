@@ -1,29 +1,22 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNumber, IsEnum, Min } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsString, IsNumber, IsEnum, Min, IsOptional } from 'class-validator';
 
 export class BestRouteQueryDto {
-  @ApiProperty({
-    description: 'Token symbol or address',
-    example: 'INJ',
-  })
-  @IsString()
-  token: string;
-
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Order amount',
     example: 1000,
   })
   @IsNumber()
   @Min(0)
-  amount: number;
+  amount?: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Order side',
     enum: ['buy', 'sell'],
     example: 'buy',
   })
   @IsEnum(['buy', 'sell'])
-  side: 'buy' | 'sell';
+  side?: 'buy' | 'sell';
 }
 
 export class BestRouteResponseDto {

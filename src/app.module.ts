@@ -46,8 +46,9 @@ import { JobsModule } from './modules/jobs/jobs.module';
       useFactory: async (config: ConfigService) => ({
         store: await redisStore({
           host: config.get('REDIS_HOST'),
-          port: config.get('REDIS_PORT'),
+          port: config.get('REDIS_PORT'),          
           password: config.get('REDIS_PASSWORD'),
+          username: config.get('REDIS_USERNAME'),
           db: config.get('REDIS_DB'),
           ttl: 60 * 1000, // 60 seconds default
         }),
@@ -62,6 +63,8 @@ import { JobsModule } from './modules/jobs/jobs.module';
         redis: {
           host: config.get('BULL_REDIS_HOST'),
           port: config.get('BULL_REDIS_PORT'),
+          username: config.get('REDIS_USERNAME'),
+          password: config.get('REDIS_PASSWORD'),
         },
       }),
       inject: [ConfigService],
